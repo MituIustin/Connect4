@@ -85,7 +85,7 @@ def winning_move(board, piece):
 			if board[r][c] == piece and board[r+1][c] == piece and board[r+2][c] == piece and board[r+3][c] == piece:
 				return True
 
-	# Down Left
+	# Down Right
 	for c in range(cols-3):
 		for r in range(rows-3):
 			if board[r][c] == piece and board[r+1][c+1] == piece and board[r+2][c+2] == piece and board[r+3][c+3] == piece:
@@ -104,12 +104,11 @@ def evaluate_window(window, piece):
 		enemy = ai_piece
 
 	if window.count(piece) == 4:
-		score += 100
+		score += 100000
 	elif window.count(piece) == 3 and window.count(0) == 1:
 		score += 5
 	elif window.count(piece) == 2 and window.count(0) == 2:
 		score += 2
-
 	if window.count(enemy) == 3 and window.count(0) == 1:
 		score -= 4
 
@@ -149,6 +148,8 @@ def score_position(board, piece):
 			score += evaluate_window(window, piece)
 
 	return score
+
+# Checks if it's a winning position / draw position
 
 def is_terminal_node(board):
 	return winning_move(board, player_piece) or winning_move(board, ai_piece) or len(get_valid_locations(board)) == 0
@@ -236,20 +237,31 @@ for i, text in enumerate(texts):
     text_render = myfont.render(text, True, colors["black"])
     text_rect = text_render.get_rect(center=(width // 2, (i+1) * height // 4))
     text_rects.append(text_rect)
+	
+texts1 = ["A Star", "Min Max", "Retele Bayesiene"]
+text_rects1 = []
+for i, text in enumerate(texts1):
+    text_render = myfont.render(text, True, colors["black"])
+    text_rect = text_render.get_rect(center=(width // 2, (i+1) * height // 4))
+    text_rects1.append(text_rect)
 
 difficulty = None
+algo  = None
 
-def display_text():
+def display_text(p):
     window.fill(colors["white"])
-    for i, text in enumerate(texts):
+    if p == 1:
+      for i, text in enumerate(texts):
         window.blit(myfont.render(text, True, colors["black"]), text_rects[i])
+    else:
+      for i, text in enumerate(texts1): 
+        window.blit(myfont.render(text, True, colors["black"]), text_rects1[i])
 
 
 while not game_over:
 	for event in pygame.event.get():
 		if difficulty == None:
 			if event.type == pygame.MOUSEBUTTONDOWN:
-                
 				for i, rect in enumerate(text_rects):
 					if rect.collidepoint(event.pos):
 						difficulty = texts[i]
@@ -263,7 +275,17 @@ while not game_over:
 						print(depth)
 						window.fill(colors["black"])
 						draw_board(board)
-			display_text()
+			display_text(1)
+			pygame.display.flip()
+		elif algo == None:
+			if event.type == pygame.MOUSEBUTTONDOWN:
+				for i, rect in enumerate(text_rects1):
+					if rect.collidepoint(event.pos):
+						algo = texts1[i]
+						print(algo)
+						window.fill(colors["black"])
+						draw_board(board)
+			display_text(2)
 			pygame.display.flip()
 		else:
 			draw_board(board)
@@ -272,11 +294,11 @@ while not game_over:
 
 			if event.type == pygame.MOUSEBUTTONDOWN:
                 # Player turn 
-    
+
 				if turn == player:
 					posx = event.pos[0]
                     
-                    # Determine col
+          # Determine col
 
 					col = int(math.floor(posx/cell_size))
 
@@ -292,15 +314,14 @@ while not game_over:
 						if turn == 1:
 							turn = 0
 						else:
-							turn = 1
-
-                        
+							turn = 1  
 						draw_board(board)
-
-
+						print(board)
+					else:
+						print("You cant place the piece here!")
         # ai turn
 		if turn == ai and not game_over:				
-            
+    
 			col, minmax_score = minmax(board, 5, -9999, 9999, True)
 
 			if is_valid_location(board, col):
@@ -314,7 +335,7 @@ while not game_over:
 					game_over = True
                     
 				draw_board(board)
-            
+				print(board)
 				turn += 1
 				turn = turn % 2
 
